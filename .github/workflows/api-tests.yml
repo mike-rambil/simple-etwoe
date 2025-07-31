@@ -2,9 +2,9 @@ name: API E2E Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test-api:
@@ -12,15 +12,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 🔄 Checkout code
-      uses: actions/checkout@v3
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v3
 
-    - name: 🔧 Install jq
-      run: sudo apt-get update && sudo apt-get install -y jq
+      - name: 🔧 Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-    - name: ✅ Make test script executable
-      run: chmod +x run_tests.sh
+      - name: ✅ Make test script executable
+        run: chmod +x run_tests.sh
 
-    - name: 🚀 Run E2E API tests
-      run: ./run_tests.sh
+      - name: 🚀 Run E2E API tests
+        run: ./run_tests.sh
 
+      - name: Check test result and write PR comment
+        if: always() # ensures this runs even if prior step fails
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const isSuccess = ${{
+              steps.test_api.outcome == 'success' ? 'true' : 'false'
+            }};
+
+            const pr = github.context.payload.pull_request;
+            if (!pr) {
+              console.log("No PR context available. Skipping comment.");
+              return;
+            }
+
+            if (isSuccess) {
+              github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "✅ All E2E tests passed. Great job!"
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "❌ Some E2E tests failed. Please check the diff logs in CI and resolve before merging."
+              });
+
+              github.rest.pulls.createReview({
+                pull_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: "REQUEST_CHANGES",
+                body: "E2E test failure detected. Fix the issues and push an update."
+              });
+            }
