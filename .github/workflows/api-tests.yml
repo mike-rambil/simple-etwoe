@@ -12,21 +12,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔄 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: 🔧 Install jq
+      - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: ✅ Make test script executable
+      - name: Make test script executable
         run: chmod +x run_tests.sh
 
-      - name: 🚀 Run E2E API tests
+      - name: Run E2E API tests
         run: ./run_tests.sh
 
       - name: Check test result and write PR comment
         if: always()
         uses: actions/github-script@v7
+        env:
+          JOB_STATUS: ${{ job.status }}
         with:
           script: |
             const pr = github.context.payload.pull_request;
@@ -61,5 +63,3 @@ jobs:
                 body: "E2E test failure detected. Fix the issues and push an update."
               });
             }
-          env:
-            JOB_STATUS: ${{ job.status }}
