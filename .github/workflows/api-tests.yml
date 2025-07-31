@@ -31,7 +31,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         with:
           script: |
-            const pr = github.context.payload.pull_request;
+            const pr = context.payload.pull_request;
             if (!pr) {
               console.log("No PR context available. Skipping comment.");
               return;
