@@ -1,8 +1,8 @@
 {
-  "host": "https://api.restful-api.dev/objects",
+  "host": "https://api.restful-api.dev",
   "tests": [
     {
-      "endpoint": "/api/whatever",
+      "endpoint": "/objects",
       "expectedResult": [
         {
           "id": "1",
