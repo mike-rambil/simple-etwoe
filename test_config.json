@@ -1,5 +1,5 @@
 {
-  "host": "http://localhost:8000",
+  "host": "https://api.restful-api.dev/objects",
   "tests": [
     {
       "endpoint": "/api/whatever",
