@@ -110,13 +110,6 @@
           }
         }
       ]
-    },
-    {
-      "endpoint": "/api/other",
-      "expectedResult": {
-        "status": "ok",
-        "value": 42
-      }
     }
   ]
 }

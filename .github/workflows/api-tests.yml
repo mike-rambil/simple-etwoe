@@ -45,7 +45,31 @@ jobs:
             const jobStatus = process.env.JOB_STATUS;
             const isSuccess = jobStatus === 'success';
 
+            // Get existing reviews
+            const reviews = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+
+            // Find bot reviews that requested changes
+            const botReviews = reviews.data.filter(review => 
+              review.user.login === 'github-actions[bot]' && 
+              review.state === 'CHANGES_REQUESTED'
+            );
+
             if (isSuccess) {
+              // Dismiss any previous bot reviews that requested changes
+              for (const review of botReviews) {
+                await github.rest.pulls.dismissReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  review_id: review.id,
+                  message: "Tests are now passing. Auto-dismissing previous failure review."
+                });
+              }
+
               github.rest.issues.createComment({
                 issue_number: pr.number,
                 owner: context.repo.owner,
